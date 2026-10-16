@@ -82,7 +82,7 @@ Changes follow Confluence: **Change Process – Regulatory Reporting**.
 
 - Every change has a Jira story in the DORA Reporting project, with its source.
 - Branch from `main` as `feature/<JIRA-KEY>-short-description`, for example
-  `feature/DORA-5-log-fidac-reference-code`.
+  `feature/DORA-6-log-fidac-reference-code`.
 - Keep the diff minimal. Small files, LF line endings (see `.gitattributes`).
 - Open a pull request that references the Jira story. A green `pr-check` and
   reviews by compliance and the technical reviewer (`.github/CODEOWNERS`) are
