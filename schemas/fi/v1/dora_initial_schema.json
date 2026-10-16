@@ -1,0 +1,296 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.fi.se/esma/dora/v1/dora_initial_schema.json",
+  "type": "object",
+  "title": "DORA_Initial_v1.0",
+  "properties": {
+    "schemaRef": {
+      "type": "string",
+      "format": "uri",
+      "description": "Points to Schema URL"
+    },
+    "reportingDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Reporting Date"
+    },
+    "financialEntityId": {
+      "type": "string",
+      "description": "Financial Entity ID"
+    },
+    "resubmission": {
+      "type": "boolean"
+    },
+    "consolidationScope": {
+      "type": "string",
+      "enum": [
+        "Unspecified"
+      ],
+      "description": "Consolidation Scope"
+    },
+    "data": {
+      "type": "object",
+      "description": "Data points",
+      "properties": {
+        "incidentSubmission": {
+          "type": "string",
+          "enum": [
+            "initial_notification",
+            "major_incident_reclassified_as_non-major"
+          ],
+          "description": "Type of submission (010 - 010)"
+        },
+        "submittingEntity-name": {
+          "type": "string",
+          "maxLength": 32767,
+          "description": "Name of the entity submitting the report (010 - 010)"
+        },
+        "submittingEntity-LEI": {
+          "type": "string",
+          "maxLength": 32767,
+          "pattern": "^[A-Z0-9]{18}[0-9]{2}$",
+          "description": "Identification code of the entity submitting the report (LEI) (010 - 020)"
+        },
+        "submittingEntity-code": {
+          "type": "string",
+          "maxLength": 32767,
+          "description": "Identification code of the entity submitting the report (EU ID) (010 - 030)"
+        },
+        "affectedEntityType": {
+          "type": "array",
+          "description": "Type of the affected financial entity (010 - 040)",
+          "multiOption": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "credit_institution",
+              "payment_institution",
+              "exempted_payment_institution",
+              "account_information_service_provider",
+              "electronic_money_institution",
+              "exempted_electronic_money_institution",
+              "investment_firm",
+              "crypto-asset_service_provider",
+              "issuer_of_asset-referenced_tokens",
+              "central_securities_depository",
+              "central_counterparty",
+              "trading_venue",
+              "trade_repository",
+              "manager_of_alternative_investment_fund",
+              "management_company",
+              "data_reporting_service_provider",
+              "insurance_and_reinsurance_undertaking",
+              "insurance_intermediary_reinsurance_intermediary_and_ancillary_insurance_intermediary",
+              "institution_for_occupational_retirement_provision",
+              "credit_rating_agency",
+              "administrator_of_critical_benchmarks",
+              "crowdfunding_service_provider",
+              "securitisation_repository"
+            ]
+          }
+        },
+        "affectedEntity-name": {
+          "type": "string",
+          "maxLength": 32767,
+          "description": "Name of the financial entity affected (010 - 050)"
+        },
+        "affectedEntity-LEI": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{18}[0-9]{2}$",
+          "description": "LEI code of the financial entity affected (010 - 060)"
+        },
+        "primaryContact-name": {
+          "type": "string",
+          "maxLength": 32767,
+          "description": "Primary contact person name (010 - 070)"
+        },
+        "primaryContact-email": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_.±-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$",
+          "description": "Primary contact person email (010 - 080)"
+        },
+        "primaryContact-phone": {
+          "type": "string",
+          "pattern": "^\\+?[1-9]\\d{1,14}(\\s?\\(\\d+\\))?([-\\s.]?\\d+)*$",
+          "description": "Primary contact person telephone (010 - 090)"
+        },
+        "secondaryContact-name": {
+          "type": "string",
+          "description": "Second contact person name (010 - 100)"
+        },
+        "secondaryContact-email": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_.±-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$",
+          "description": "Second contact person email (010 - 110)"
+        },
+        "secondaryContact-phone": {
+          "type": "string",
+          "pattern": "^\\+?[1-9]\\d{1,14}(\\s?\\(\\d+\\))?([-\\s.]?\\d+)*$",
+          "description": "Second contact person telephone (010 - 120)"
+        },
+        "ultimateParentUndertaking-name": {
+          "type": "string",
+          "maxLength": 32767,
+          "description": "Name of the ultimate parent undertaking (010 - 130)"
+        },
+        "ultimateParentUndertaking-LEI": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{18}[0-9]{2}$",
+          "description": "LEI code of the ultimate parent undertaking (010 - 140)"
+        },
+        "reportCurrency": {
+          "type": "string",
+          "enum": [
+            "BGN",
+            "CHF",
+            "CZK",
+            "DKK",
+            "EUR",
+            "HUF",
+            "ISK",
+            "NOK",
+            "PLN",
+            "RON",
+            "SEK"
+          ],
+          "description": "Reporting currency (010 - 150)"
+        },
+        "financialEntityCode": {
+          "type": "string",
+          "maxLength": 32767,
+          "description": "Incident reference code assigned by the financial entity (010 - 160)"
+        },
+        "detectionDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date and time of detection of the ICT-related incident (010 - 170)"
+        },
+        "classificationDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date and time of classification of the incident as major (010 - 180)"
+        },
+        "incidentDescription": {
+          "type": "string",
+          "maxLength": 32767,
+          "description": "Description of the ICT-related incident (010 - 190)"
+        },
+        "classificationCriterion": {
+          "type": "array",
+          "description": "Classification criteria that triggered the incident report (010 - 200)",
+          "multiOption": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "clients_financial_counterparts_and_transactions_affected",
+              "geographical_spread",
+              "data_losses",
+              "economic_impact",
+              "reputational_impact",
+              "duration_and_service_downtime",
+              "critical_services_affected"
+            ]
+          },
+          "minItems": 1
+        },
+        "countryCodeMaterialityThresholds": {
+          "type": "array",
+          "description": "Materiality thresholds for the classification criterion ‘Geographical spread’ (010 - 210)",
+          "multiOption": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "AT",
+              "BE",
+              "BG",
+              "CY",
+              "CZ",
+              "DE",
+              "DK",
+              "EE",
+              "ES",
+              "FI",
+              "FR",
+              "GR",
+              "HR",
+              "HU",
+              "IE",
+              "IS",
+              "IT",
+              "LI",
+              "LT",
+              "LU",
+              "LV",
+              "MT",
+              "NL",
+              "NO",
+              "PL",
+              "PT",
+              "RO",
+              "SE",
+              "SI",
+              "SK"
+            ]
+          }
+        },
+        "incidentDiscovery": {
+          "type": "string",
+          "enum": [
+            "it_security",
+            "staff",
+            "internal_audit",
+            "external_audit",
+            "clients",
+            "financial_counterparts",
+            "third-party_provider",
+            "attacker",
+            "monitoring_systems",
+            "authority_agency_law_enforcement_body",
+            "other"
+          ],
+          "description": "Discovery of the major ICT-related incident (010 - 220)"
+        },
+        "originatesFromThirdPartyProvider": {
+          "type": "string",
+          "maxLength": 32767,
+          "description": "Indication whether the incident originates from a third party provider or another financial entity (010 - 230)"
+        },
+        "isBusinessContinuityActivated": {
+          "type": "boolean",
+          "description": "Activation of business continuity plan, if activated (010 - 240)"
+        },
+        "otherInformation": {
+          "type": "string",
+          "maxLength": 32767,
+          "description": "Other relevant information (010 - 250)"
+        }
+      },
+      "required": [
+        "classificationCriterion",
+        "classificationDateTime",
+        "detectionDateTime",
+        "financialEntityCode",
+        "incidentDescription",
+        "incidentDiscovery",
+        "incidentSubmission",
+        "isBusinessContinuityActivated",
+        "primaryContact-email",
+        "primaryContact-name",
+        "primaryContact-phone",
+        "reportCurrency",
+        "secondaryContact-email",
+        "secondaryContact-name",
+        "secondaryContact-phone",
+        "submittingEntity-name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "data",
+    "financialEntityId",
+    "reportingDate",
+    "schemaRef"
+  ],
+  "additionalProperties": false
+}

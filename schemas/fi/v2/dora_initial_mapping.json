@@ -1,0 +1,189 @@
+{
+  "versionTag": "2.0",
+  "schemaId": "https://schemas.fi.se/esma/dora/v2/dora_initial_schema.json",
+  "mapping_version": "v2",
+  "mapping": [
+    {
+      "path": "$.data.incidentSubmission",
+      "report_table": "general_information",
+      "row_id": "010",
+      "column_id": "010",
+      "data_point_id": "incidentSubmission"
+    },
+    {
+      "path": "$.data.submittingEntity-name",
+      "report_table": "Initial_report",
+      "row_id": "010",
+      "column_id": "010",
+      "data_point_id": "submittingEntity-name"
+    },
+    {
+      "path": "$.data.submittingEntity-LEI",
+      "report_table": "Initial_report",
+      "row_id": "020",
+      "column_id": "010",
+      "data_point_id": "submittingEntity-LEI"
+    },
+    {
+      "path": "$.data.submittingEntity-code",
+      "report_table": "Initial_report",
+      "row_id": "030",
+      "column_id": "010",
+      "data_point_id": "submittingEntity-code"
+    },
+    {
+      "path": "$.data.primaryContact-name",
+      "report_table": "Initial_report",
+      "row_id": "040",
+      "column_id": "010",
+      "data_point_id": "primaryContact-name"
+    },
+    {
+      "path": "$.data.primaryContact-email",
+      "report_table": "Initial_report",
+      "row_id": "050",
+      "column_id": "010",
+      "data_point_id": "primaryContact-email"
+    },
+    {
+      "path": "$.data.primaryContact-phone",
+      "report_table": "Initial_report",
+      "row_id": "060",
+      "column_id": "010",
+      "data_point_id": "primaryContact-phone"
+    },
+    {
+      "path": "$.data.secondaryContact-name",
+      "report_table": "Initial_report",
+      "row_id": "070",
+      "column_id": "010",
+      "data_point_id": "secondaryContact-name"
+    },
+    {
+      "path": "$.data.secondaryContact-email",
+      "report_table": "Initial_report",
+      "row_id": "080",
+      "column_id": "010",
+      "data_point_id": "secondaryContact-email"
+    },
+    {
+      "path": "$.data.secondaryContact-phone",
+      "report_table": "Initial_report",
+      "row_id": "090",
+      "column_id": "010",
+      "data_point_id": "secondaryContact-phone"
+    },
+    {
+      "path": "$.data.ultimateParentUndertaking-name",
+      "report_table": "Initial_report",
+      "row_id": "100",
+      "column_id": "010",
+      "data_point_id": "ultimateParentUndertaking-name"
+    },
+    {
+      "path": "$.data.ultimateParentUndertaking-LEI",
+      "report_table": "Initial_report",
+      "row_id": "110",
+      "column_id": "010",
+      "data_point_id": "ultimateParentUndertaking-LEI"
+    },
+    {
+      "path": "$.data.reportCurrency",
+      "report_table": "Initial_report",
+      "row_id": "120",
+      "column_id": "010",
+      "data_point_id": "reportCurrency"
+    },
+    {
+      "path": "$.data.financialEntityCode",
+      "report_table": "Initial_report",
+      "row_id": "130",
+      "column_id": "010",
+      "data_point_id": "financialEntityCode"
+    },
+    {
+      "path": "$.data.detectionDateTime",
+      "report_table": "Initial_report",
+      "row_id": "140",
+      "column_id": "010",
+      "data_point_id": "detectionDateTime"
+    },
+    {
+      "path": "$.data.classificationDateTime",
+      "report_table": "Initial_report",
+      "row_id": "150",
+      "column_id": "010",
+      "data_point_id": "classificationDateTime"
+    },
+    {
+      "path": "$.data.incidentDescription",
+      "report_table": "Initial_report",
+      "row_id": "160",
+      "column_id": "010",
+      "data_point_id": "incidentDescription"
+    },
+    {
+      "path": "$.data.classificationCriterion",
+      "report_table": "Initial_report",
+      "row_id": "170",
+      "column_id": "010",
+      "data_point_id": "classificationCriterion"
+    },
+    {
+      "path": "$.data.countryCodeMaterialityThresholds",
+      "report_table": "Initial_report",
+      "row_id": "180",
+      "column_id": "010",
+      "data_point_id": "countryCodeMaterialityThresholds"
+    },
+    {
+      "path": "$.data.incidentDiscovery",
+      "report_table": "Initial_report",
+      "row_id": "190",
+      "column_id": "010",
+      "data_point_id": "incidentDiscovery"
+    },
+    {
+      "path": "$.data.originatesFromThirdPartyProvider",
+      "report_table": "Initial_report",
+      "row_id": "200",
+      "column_id": "010",
+      "data_point_id": "originatesFromThirdPartyProvider"
+    },
+    {
+      "path": "$.data.isBusinessContinuityActivated",
+      "report_table": "Initial_report",
+      "row_id": "210",
+      "column_id": "010",
+      "data_point_id": "isBusinessContinuityActivated"
+    },
+    {
+      "path": "$.data.otherInformation",
+      "report_table": "Initial_report",
+      "row_id": "220",
+      "column_id": "010",
+      "data_point_id": "otherInformation"
+    },
+    {
+      "path": "$.DYN-ROWS-Initial_report_affectedEntities[*].affectedEntityType",
+      "report_table": "Initial_report_affectedEntities",
+      "row_id": "$affectedEntity-LEI",
+      "column_id": "010",
+      "data_point_id": "affectedEntityType"
+    },
+    {
+      "path": "$.DYN-ROWS-Initial_report_affectedEntities[*].affectedEntity-name",
+      "report_table": "Initial_report_affectedEntities",
+      "row_id": "$affectedEntity-LEI",
+      "column_id": "020",
+      "data_point_id": "affectedEntity-name"
+    },
+    {
+      "path": "$.DYN-ROWS-Initial_report_affectedEntities[*].affectedEntity-LEI",
+      "report_table": "Initial_report_affectedEntities",
+      "row_id": "$affectedEntity-LEI",
+      "column_id": "030",
+      "data_point_id": "affectedEntity-LEI"
+    }
+  ]
+}

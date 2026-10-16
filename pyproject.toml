@@ -1,0 +1,12 @@
+[project]
+name = "dora-reporting"
+version = "1.3.0"
+description = "DORA major incident reports (Initial) for Finansinspektionen, generated from ServiceNow"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+markers = [
+    "fi_source(text): the FI requirement and source that the test verifies, as '<source>: <requirement>'",
+]
