@@ -1,0 +1,49 @@
+name: generate-report
+run-name: generate-report ${{ inputs.incident }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      incident:
+        description: Major incident number in ServiceNow
+        required: true
+      source:
+        description: Where the incident data comes from
+        type: choice
+        options: [servicenow, fixture]
+        default: servicenow
+
+permissions:
+  contents: read
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+      INCIDENT: ${{ inputs.incident }}
+      SOURCE: ${{ inputs.source }}
+      SERVICENOW_INSTANCE: ${{ secrets.SERVICENOW_INSTANCE }}
+      SERVICENOW_USER: ${{ secrets.SERVICENOW_USER }}
+      SERVICENOW_PASSWORD: ${{ secrets.SERVICENOW_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Verify FI schema files (SHA-256)
+        run: python -m dora_reporting.cli checksums
+      - name: Generate the DORA Initial report and validate against FI v2
+        run: python -m dora_reporting.cli generate --incident "$INCIDENT" --source "$SOURCE" --schema v2 --out out
+      - name: Write summary
+        if: ${{ !cancelled() }}
+        run: python tools/write_summary.py validation out/validation-v2.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload the validated report
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: dora-initial-${{ inputs.incident }}
+          path: out/

@@ -1,0 +1,56 @@
+name: baseline
+run-name: baseline ${{ inputs.incident }} (${{ inputs.source }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      incident:
+        description: Incident number in ServiceNow
+        required: true
+        default: INC0009817
+      source:
+        description: Where the incident data comes from
+        type: choice
+        options: [fixture, servicenow]
+        default: fixture
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    # The report from the current mapper, validated against FI's v1 and v2 schema files.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        schema: [v1, v2]
+    env:
+      PYTHONPATH: src
+      INCIDENT: ${{ inputs.incident }}
+      SOURCE: ${{ inputs.source }}
+      SCHEMA: ${{ matrix.schema }}
+      SERVICENOW_INSTANCE: ${{ secrets.SERVICENOW_INSTANCE }}
+      SERVICENOW_USER: ${{ secrets.SERVICENOW_USER }}
+      SERVICENOW_PASSWORD: ${{ secrets.SERVICENOW_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Verify FI schema files (SHA-256)
+        run: python -m dora_reporting.cli checksums
+      - name: Generate report with the current mapper and validate against FI ${{ matrix.schema }}
+        run: python -m dora_reporting.cli generate --incident "$INCIDENT" --source "$SOURCE" --schema "$SCHEMA" --out out
+      - name: Write summary
+        if: ${{ !cancelled() }}
+        run: python tools/write_summary.py validation "out/validation-$SCHEMA.json" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: baseline-${{ matrix.schema }}
+          path: out/
