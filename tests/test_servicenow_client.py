@@ -35,7 +35,7 @@ class FakeTableApi:
         else:
             key, value = query.split("=", 1)
             rows = [r for r in self.tables[table] if r[key] == value]
-        return FakeResponse(200, [{f: row[f] for f in fields} for row in rows])
+        return FakeResponse(200, [{f: row[f] for f in fields if f in row} for row in rows])
 
 
 def tables_from(snapshot):
@@ -89,3 +89,24 @@ def test_missing_environment_raises(monkeypatch):
     monkeypatch.delenv("SERVICENOW_PASSWORD", raising=False)
     with pytest.raises(ServiceNowError, match="SERVICENOW_USER, SERVICENOW_PASSWORD"):
         ServiceNowClient.from_env()
+
+
+class NotJsonResponse:
+    status_code = 200
+
+    def json(self):
+        raise requests.JSONDecodeError("Expecting value", "<html>Instance hibernating</html>", 0)
+
+
+def test_non_json_response_raises_servicenow_error():
+    api = FakeTableApi({})
+    api.get = lambda url, params, timeout: NotJsonResponse()
+    with pytest.raises(ServiceNowError, match="incident: response is not Table API JSON"):
+        client_for(api).fetch_snapshot("INC0009817")
+
+
+def test_incident_without_confirmed_entities_field_is_read(snapshot):
+    snapshot["incident"].pop("u_dora_confirmed_entities")
+    tables = tables_from(snapshot)
+    result = client_for(FakeTableApi(tables)).fetch_snapshot("INC0009817")
+    assert set(result["companies"]) == set(snapshot["companies"])

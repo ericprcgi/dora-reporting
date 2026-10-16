@@ -20,6 +20,14 @@ def _required(incident: dict, field: str) -> str:
     return value
 
 
+def _timestamp(incident: dict, field: str) -> str:
+    value = _required(incident, field)
+    try:
+        return format_datetime(value)
+    except ValueError as exc:
+        raise ReportError(f"{incident.get('number')}: {field} is not a ServiceNow UTC timestamp: {value!r}") from exc
+
+
 def _split(value: str) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
@@ -49,8 +57,8 @@ def build_initial_report(snapshot: dict) -> dict:
     incident = snapshot["incident"]
     if incident.get("u_dora_major") != "true":
         raise ReportError(f"{incident['number']} is not classified as a major incident")
-    detected_at = _required(incident, "u_dora_detected_at")
-    classified_at = _required(incident, "u_dora_classified_at")
+    detected_at = _timestamp(incident, "u_dora_detected_at")
+    classified_at = _timestamp(incident, "u_dora_classified_at")
     officer = snapshot["reporting_officer"]
 
     data = {
@@ -64,8 +72,8 @@ def build_initial_report(snapshot: dict) -> dict:
         **_contact(officer, "secondaryContact"),
         "reportCurrency": settings.REPORT_CURRENCY,
         "financialEntityCode": incident["number"],
-        "detectionDateTime": format_datetime(detected_at),
-        "classificationDateTime": format_datetime(classified_at),
+        "detectionDateTime": detected_at,
+        "classificationDateTime": classified_at,
         "incidentDescription": incident.get("description") or incident["short_description"],
         "classificationCriterion": _split(incident.get("u_dora_criteria") or ""),
         "incidentDiscovery": _required(incident, "u_dora_discovery"),
@@ -73,7 +81,7 @@ def build_initial_report(snapshot: dict) -> dict:
     }
     return {
         "schemaRef": SCHEMA_REF,
-        "reportingDate": classified_at[:10],
+        "reportingDate": incident["u_dora_classified_at"][:10],
         "financialEntityId": settings.FINANCIAL_ENTITY_ID,
         "data": data,
     }

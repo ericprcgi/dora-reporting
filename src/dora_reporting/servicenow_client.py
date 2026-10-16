@@ -64,7 +64,11 @@ class ServiceNowClient:
             raise ServiceNowError(f"{table}: request failed ({type(exc).__name__})") from exc
         if response.status_code != 200:
             raise ServiceNowError(f"{table}: HTTP {response.status_code}")
-        return response.json()["result"]
+        try:
+            return response.json()["result"]
+        except (ValueError, KeyError) as exc:
+            # For example the page of a hibernating instance or a login page.
+            raise ServiceNowError(f"{table}: response is not Table API JSON") from exc
 
     def _get_by_ids(self, table: str, ids: list[str], fields: list[str]) -> list[dict]:
         return self._get(table, "sys_idIN" + ",".join(ids), fields) if ids else []
@@ -79,7 +83,7 @@ class ServiceNowClient:
         services = self._get_by_ids("cmdb_ci_service", [l["cmdb_ci_service"] for l in links],
                                     SERVICE_FIELDS)
 
-        company_ids = {incident["company"], *_ids(incident["u_dora_confirmed_entities"])}
+        company_ids = {incident.get("company", ""), *_ids(incident.get("u_dora_confirmed_entities"))}
         company_ids |= {service["company"] for service in services}
         companies = self._get_by_ids("core_company", sorted(company_ids - {""}), COMPANY_FIELDS)
 

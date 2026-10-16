@@ -62,3 +62,10 @@ def test_missing_classification_time_is_rejected(snapshot):
     snapshot["incident"]["u_dora_classified_at"] = ""
     with pytest.raises(ReportError, match="u_dora_classified_at"):
         build_initial_report(snapshot)
+
+
+@pytest.mark.fi_source("v1 schema: detectionDateTime format date-time")
+def test_malformed_detection_time_is_rejected(snapshot):
+    snapshot["incident"]["u_dora_detected_at"] = "12/03/2026 08:10"
+    with pytest.raises(ReportError, match="u_dora_detected_at"):
+        build_initial_report(snapshot)
