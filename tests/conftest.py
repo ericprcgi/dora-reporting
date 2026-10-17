@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+from dora_reporting.sources import build_snapshot
+
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
@@ -15,6 +17,12 @@ def _record_fi_source(request, record_property):
 
 
 @pytest.fixture
-def snapshot():
-    """ServiceNow snapshot of the closed major incident INC0009817 (March 2026)."""
-    return json.loads((FIXTURES / "INC0009817.json").read_text(encoding="utf-8"))
+def raw():
+    """The closed major incident INC0010007 (March 2026) as the ServiceNow Table API returns it."""
+    return json.loads((FIXTURES / "INC0010007.json").read_text(encoding="utf-8"))
+
+
+@pytest.fixture
+def snapshot(raw):
+    """INC0010007 combined with the reference data, as the mapper receives it."""
+    return build_snapshot(raw)

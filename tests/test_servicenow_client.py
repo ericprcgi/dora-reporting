@@ -38,22 +38,16 @@ class FakeTableApi:
         return FakeResponse(200, [{f: row[f] for f in fields if f in row} for row in rows])
 
 
-def tables_from(snapshot):
-    incident = snapshot["incident"]
+def tables_from(raw):
+    incident = raw["incident"]
     return {
         "incident": [incident],
         "task_cmdb_ci_service": [
             {"task.number": incident["number"], "cmdb_ci_service": s["sys_id"]}
-            for s in reversed(snapshot["affected_services"])
+            for s in reversed(raw["affected_services"])
         ],
-        "cmdb_ci_service": snapshot["affected_services"]
-        + [{"sys_id": "b1000000000000000000000000000004", "name": "DORA Reporting Service", "company": ""}],
-        "core_company": list(snapshot["companies"].values())
-        + [{"sys_id": "a1000000000000000000000000000009", "name": "Other AB", "u_lei": "",
-            "u_dora_entity_type": "", "parent": ""}],
-        "sys_user": [snapshot["reporting_officer"],
-                     {"sys_id": "c1000000000000000000000000000002", "user_name": "maria.lind",
-                      "name": "Maria Lind", "email": "maria.lind@swedishbank.example", "phone": ""}],
+        "cmdb_ci_service": raw["affected_services"]
+        + [{"sys_id": "b1000000000000000000000000000004", "name": "DORA Reporting Service"}],
     }
 
 
@@ -61,17 +55,18 @@ def client_for(api):
     return ServiceNowClient("https://example.service-now.com/", "svc_dora_ci", "secret", session=api)
 
 
-def test_fetch_snapshot_builds_snapshot(snapshot):
-    api = FakeTableApi(tables_from(snapshot))
-    assert client_for(api).fetch_snapshot("INC0009817") == snapshot
+def test_fetch_incident_returns_the_raw_record(raw):
+    api = FakeTableApi(tables_from(raw))
+    assert client_for(api).fetch_incident("INC0010007") == raw
+    assert [table for table, _ in api.requests] == ["incident", "task_cmdb_ci_service", "cmdb_ci_service"]
     assert api.auth == ("svc_dora_ci", "secret")
     assert all(p["sysparm_exclude_reference_link"] == "true" for _, p in api.requests)
 
 
-def test_unknown_incident_raises_incident_not_found(snapshot):
-    api = FakeTableApi(tables_from(snapshot))
+def test_unknown_incident_raises_incident_not_found(raw):
+    api = FakeTableApi(tables_from(raw))
     with pytest.raises(IncidentNotFound, match="INC0000001"):
-        client_for(api).fetch_snapshot("INC0000001")
+        client_for(api).fetch_incident("INC0000001")
 
 
 @pytest.mark.parametrize("api, expected", [
@@ -80,7 +75,7 @@ def test_unknown_incident_raises_incident_not_found(snapshot):
 ])
 def test_http_error_raises_servicenow_error_with_table_and_status(api, expected):
     with pytest.raises(ServiceNowError, match=expected):
-        client_for(api).fetch_snapshot("INC0009817")
+        client_for(api).fetch_incident("INC0010007")
 
 
 def test_missing_environment_raises(monkeypatch):
@@ -102,11 +97,4 @@ def test_non_json_response_raises_servicenow_error():
     api = FakeTableApi({})
     api.get = lambda url, params, timeout: NotJsonResponse()
     with pytest.raises(ServiceNowError, match="incident: response is not Table API JSON"):
-        client_for(api).fetch_snapshot("INC0009817")
-
-
-def test_incident_without_confirmed_entities_field_is_read(snapshot):
-    snapshot["incident"].pop("u_dora_confirmed_entities")
-    tables = tables_from(snapshot)
-    result = client_for(FakeTableApi(tables)).fetch_snapshot("INC0009817")
-    assert set(result["companies"]) == set(snapshot["companies"])
+        client_for(api).fetch_incident("INC0010007")

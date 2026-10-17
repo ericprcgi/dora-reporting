@@ -1,0 +1,23 @@
+{
+  "incident": {
+    "sys_id": "d1000000000000000000000000010042",
+    "number": "INC0010007",
+    "short_description": "Payment Hub outage: card payments and fund trading settlement disrupted",
+    "description": "Payment Hub stopped processing transactions. Card payments and settlement flows for fund trading were unavailable until the service was restored.\n\nDORA classification\nClassification: major ICT-related incident\nLegal entity: Swedish Bank Payments AB\nDetected (UTC): 2026-03-12 08:10\nClassified as major (UTC): 2026-03-12 11:00\nCriteria: critical_services_affected, clients_financial_counterparts_and_transactions_affected\nDiscovered via: monitoring_systems\nBusiness continuity plan activated: yes\nConfirmed affected entities: Swedish Bank Payments AB, Swedish Bank Fonder AB\nConfirmed by: Maria Lind (incident manager), 2026-03-19 11:00 local time (10:00 UTC)",
+    "state": "7"
+  },
+  "affected_services": [
+    {
+      "sys_id": "b1000000000000000000000000000002",
+      "name": "Card Payments"
+    },
+    {
+      "sys_id": "b1000000000000000000000000000003",
+      "name": "Fund Trading"
+    },
+    {
+      "sys_id": "b1000000000000000000000000000001",
+      "name": "Payment Hub"
+    }
+  ]
+}

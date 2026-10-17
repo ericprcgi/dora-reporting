@@ -1,25 +1,50 @@
 # dora-reporting
 
 Generates Swedish Bank AB's DORA major incident reports (Initial report) for
-Finansinspektionen (FI) from ServiceNow.
+Finansinspektionen (FI) from ServiceNow and the reviewed reference data.
 
 The DORA reporting officer uploads the report in FI's reporting portal Fidac.
 This repository never submits anything to FI.
 
 ## How it works
 
-ServiceNow → snapshot → mapper → validation → report file
+ServiceNow + reference data → snapshot → mapper → validation → report file
 
-1. `servicenow_client.py` reads the major incident, the legal entities it refers
-   to, the affected services and the DORA reporting officer from ServiceNow
-   (Table API). ServiceNow stores times in UTC.
-2. `mapper_initial.py` builds the Initial report in FI's JSON format. Field
+1. `servicenow_client.py` reads the major incident and its affected business
+   services from ServiceNow (Table API).
+2. `incident_block.py` reads the DORA classification block at the end of the
+   incident description (format below). Times in the block are UTC.
+3. `reference_data.py` reads `reference_data/`: a reviewed copy of the
+   Confluence pages **Legal Entity Register** and **DORA Reporting Contacts**.
+   When a page changes, the copy is updated by a pull request.
+4. `sources.py` combines them into the snapshot that the mapper reads.
+5. `mapper_initial.py` builds the Initial report in FI's JSON format. Field
    sources and transformations are documented in Confluence:
    **Data Dictionary – Initial Report**.
-3. `validate.py` checks the SHA-256 of FI's schema file and validates the
+6. `validate.py` checks the SHA-256 of FI's schema file and validates the
    report against it, including formats such as dates.
-4. `cli.py` ties it together and writes `out/<incident>_initial.json` and
+7. `cli.py` ties it together and writes `out/<incident>_initial.json` and
    `out/validation-<schema>.json`.
+
+### The DORA classification block
+
+The incident manager keeps the DORA data at the end of the incident description:
+
+```text
+DORA classification
+Classification: major ICT-related incident
+Legal entity: Swedish Bank Payments AB
+Detected (UTC): 2026-03-12 08:10
+Classified as major (UTC): 2026-03-12 11:00
+Criteria: critical_services_affected, clients_financial_counterparts_and_transactions_affected
+Discovered via: monitoring_systems
+Business continuity plan activated: yes
+Confirmed affected entities: Swedish Bank Payments AB, Swedish Bank Fonder AB
+Confirmed by: Maria Lind (incident manager), 2026-03-19 11:00 local time (10:00 UTC)
+```
+
+The last two lines are filled in when the incident manager has confirmed the
+affected entities. The other lines are required.
 
 ## Running locally
 
@@ -27,11 +52,11 @@ ServiceNow → snapshot → mapper → validation → report file
 python3.12 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 python -m pytest
-PYTHONPATH=src python -m dora_reporting.cli generate --incident INC0009817 --source fixture --schema v1
+PYTHONPATH=src python -m dora_reporting.cli generate --incident INC0010007 --source fixture --schema v1
 PYTHONPATH=src python -m dora_reporting.cli checksums
 ```
 
-- `--source fixture` reads a saved snapshot from `tests/fixtures/`.
+- `--source fixture` reads a saved copy of the incident from `tests/fixtures/`.
 - `--source servicenow` reads from ServiceNow and needs `SERVICENOW_INSTANCE`,
   `SERVICENOW_USER` and `SERVICENOW_PASSWORD`.
 - Exit codes: 0 valid, 1 not valid against the schema, 2 error (for example an
@@ -41,8 +66,8 @@ PYTHONPATH=src python -m dora_reporting.cli checksums
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `baseline` | Manual: `incident` (default INC0009817), `source` (default fixture) | Generates the report with the current mapper and validates it against FI's v1 and v2 schemas in two jobs, `validate (v1)` and `validate (v2)`. The summary groups the errors |
-| `pr-check` | Every pull request to `main` | Checks FI's files (SHA-256), runs the tests, validates the INC0009817 report against FI's v2 schema and writes the summary tables. Required before merge |
+| `baseline` | Manual: `incident` (default INC0010007), `source` (default fixture) | Generates the report with the current mapper and validates it against FI's v1 and v2 schemas in two jobs, `validate (v1)` and `validate (v2)`. The summary groups the errors |
+| `pr-check` | Every pull request to `main` | Checks FI's files (SHA-256), runs the tests, validates the INC0010007 report against FI's v2 schema and writes the summary tables. Required before merge |
 | `generate-report` | Manual: `incident` (required), `source` (default servicenow) | Generates the report for a major incident with the code on `main`, validates it against FI's v2 schema and stores the JSON file as an artifact |
 
 ## FI schema files
@@ -72,7 +97,7 @@ files; add a new version directory instead.
 - `pr-check` builds a table from the markers with the columns FI requirement,
   source, test and result (`tools/write_summary.py`), so every FI requirement
   can be traced to its test.
-- Use the shared `snapshot` fixture (INC0009817, see `tests/conftest.py`) and
+- Use the shared `snapshot` fixture (INC0010007, see `tests/conftest.py`) and
   change it inside the test rather than adding fixture files.
 - One behaviour per test, named after the behaviour.
 

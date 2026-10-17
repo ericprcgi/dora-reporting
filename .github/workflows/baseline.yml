@@ -7,7 +7,7 @@ on:
       incident:
         description: Incident number in ServiceNow
         required: true
-        default: INC0009817
+        default: INC0010007
       source:
         description: Where the incident data comes from
         type: choice

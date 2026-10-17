@@ -1,6 +1,6 @@
 """Command line used locally and by the CI workflows.
 
-    python -m dora_reporting.cli generate --incident INC0009817 --source fixture --schema v1
+    python -m dora_reporting.cli generate --incident INC0010007 --source fixture --schema v1
     python -m dora_reporting.cli checksums
 """
 import argparse

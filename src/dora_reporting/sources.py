@@ -33,10 +33,10 @@ def build_snapshot(raw: dict) -> dict:
 
 def load_snapshot(incident: str, source: str) -> dict:
     if source == "servicenow":
-        return ServiceNowClient.from_env().fetch_snapshot(incident)
+        return build_snapshot(ServiceNowClient.from_env().fetch_incident(incident))
     if source == "fixture":
         path = FIXTURE_DIR / f"{incident}.json"
         if not path.is_file():
             raise SourceError(f"no fixture for {incident} in tests/fixtures")
-        return json.loads(path.read_text(encoding="utf-8"))
+        return build_snapshot(json.loads(path.read_text(encoding="utf-8")))
     raise SourceError(f"unknown source: {source}")

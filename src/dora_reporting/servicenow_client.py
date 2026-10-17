@@ -1,24 +1,15 @@
-"""Read a major incident and its related records from ServiceNow (Table API).
+"""Read a major incident and its affected services from ServiceNow (Table API).
 
-The result is a snapshot: the incident, the legal entities it refers to, the
-affected services and the DORA reporting officer. Values are returned as
-ServiceNow stores them (times in UTC, lists as comma-separated sys_ids).
+The result has the same form as a saved fixture: the incident record, whose
+description ends with the DORA classification block, and the affected business
+services. Legal entities and contacts come from the reference data.
 """
 import os
 
 import requests
 
-from dora_reporting import settings
-
-INCIDENT_FIELDS = [
-    "sys_id", "number", "short_description", "description", "state", "company",
-    "u_dora_major", "u_dora_detected_at", "u_dora_classified_at", "u_dora_criteria",
-    "u_dora_discovery", "u_dora_bcp_activated", "u_dora_confirmed_entities",
-    "u_dora_confirmed_by", "u_dora_confirmed_at",
-]
-COMPANY_FIELDS = ["sys_id", "name", "u_lei", "u_dora_entity_type", "parent"]
-SERVICE_FIELDS = ["sys_id", "name", "company"]
-USER_FIELDS = ["sys_id", "user_name", "name", "email", "phone"]
+INCIDENT_FIELDS = ["sys_id", "number", "short_description", "description", "state"]
+SERVICE_FIELDS = ["sys_id", "name"]
 ENV_VARS = ("SERVICENOW_INSTANCE", "SERVICENOW_USER", "SERVICENOW_PASSWORD")
 
 
@@ -28,10 +19,6 @@ class ServiceNowError(Exception):
 
 class IncidentNotFound(ServiceNowError):
     """No incident with the given number."""
-
-
-def _ids(value: str) -> list[str]:
-    return [item for item in (value or "").split(",") if item]
 
 
 class ServiceNowClient:
@@ -70,31 +57,14 @@ class ServiceNowClient:
             # For example the page of a hibernating instance or a login page.
             raise ServiceNowError(f"{table}: response is not Table API JSON") from exc
 
-    def _get_by_ids(self, table: str, ids: list[str], fields: list[str]) -> list[dict]:
-        return self._get(table, "sys_idIN" + ",".join(ids), fields) if ids else []
-
-    def fetch_snapshot(self, number: str) -> dict:
+    def fetch_incident(self, number: str) -> dict:
         incidents = self._get("incident", f"number={number}", INCIDENT_FIELDS)
         if not incidents:
             raise IncidentNotFound(f"{number} not found in ServiceNow")
-        incident = incidents[0]
-
         links = self._get("task_cmdb_ci_service", f"task.number={number}", ["cmdb_ci_service"])
-        services = self._get_by_ids("cmdb_ci_service", [l["cmdb_ci_service"] for l in links],
-                                    SERVICE_FIELDS)
-
-        company_ids = {incident.get("company", ""), *_ids(incident.get("u_dora_confirmed_entities"))}
-        company_ids |= {service["company"] for service in services}
-        companies = self._get_by_ids("core_company", sorted(company_ids - {""}), COMPANY_FIELDS)
-
-        user_name = settings.REPORTING_OFFICER_USER_NAME
-        officers = self._get("sys_user", f"user_name={user_name}", USER_FIELDS)
-        if not officers:
-            raise ServiceNowError(f"reporting officer {user_name} not found in ServiceNow")
-
+        ids = [link["cmdb_ci_service"] for link in links]
+        services = self._get("cmdb_ci_service", "sys_idIN" + ",".join(ids), SERVICE_FIELDS) if ids else []
         return {
-            "incident": incident,
-            "companies": {company["sys_id"]: company for company in companies},
+            "incident": incidents[0],
             "affected_services": sorted(services, key=lambda service: service["name"]),
-            "reporting_officer": officers[0],
         }

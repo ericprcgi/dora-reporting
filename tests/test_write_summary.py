@@ -37,7 +37,7 @@ def test_tests_table_reads_fi_source_properties(tmp_path):
 def test_validation_table_counts_groups(tmp_path):
     result = tmp_path / "validation-v2.json"
     result.write_text(json.dumps({
-        "incident": "INC0009817", "schema_version": "v2",
+        "incident": "INC0010007", "schema_version": "v2",
         "schema_file": "schemas/fi/v2/dora_initial_schema.json", "sha256": "6a8f46567e85c1a0",
         "valid": False,
         "issues": [
@@ -58,7 +58,7 @@ def test_validation_table_counts_groups(tmp_path):
 def test_passed_validation_has_no_error_table(tmp_path):
     result = tmp_path / "validation-v1.json"
     result.write_text(json.dumps({
-        "incident": "INC0009817", "schema_version": "v1", "schema_file": "s", "sha256": "h",
+        "incident": "INC0010007", "schema_version": "v1", "schema_file": "s", "sha256": "h",
         "valid": True, "issues": [],
     }), encoding="utf-8")
     text = validation_table(result)

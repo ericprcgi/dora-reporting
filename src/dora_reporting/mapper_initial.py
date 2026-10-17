@@ -1,4 +1,4 @@
-"""Build FI's DORA Initial report from a ServiceNow incident snapshot.
+"""Build FI's DORA Initial report from an incident snapshot (see sources.build_snapshot).
 
 Field sources and transformations are documented in Confluence:
 "Data Dictionary – Initial Report".
@@ -13,35 +13,32 @@ class ReportError(Exception):
     """The incident cannot be reported (not major, or data is missing)."""
 
 
-def _required(incident: dict, field: str) -> str:
-    value = (incident.get(field) or "").strip()
-    if not value:
-        raise ReportError(f"{incident.get('number')}: {field} is empty")
-    return value
+def _required(snapshot: dict, field: str) -> str:
+    value = snapshot["dora"].get(field) or ""
+    if not value.strip():
+        raise ReportError(f"{snapshot['incident']['number']}: {field} is empty")
+    return value.strip()
 
 
-def _timestamp(incident: dict, field: str) -> str:
-    value = _required(incident, field)
+def _timestamp(snapshot: dict, field: str) -> str:
+    value = _required(snapshot, field)
     try:
         return format_datetime(value)
     except ValueError as exc:
-        raise ReportError(f"{incident.get('number')}: {field} is not a ServiceNow UTC timestamp: {value!r}") from exc
-
-
-def _split(value: str) -> list[str]:
-    return [item.strip() for item in value.split(",") if item.strip()]
+        raise ReportError(f"{snapshot['incident']['number']}: {field} is not a UTC timestamp: {value!r}") from exc
 
 
 def _affected_entity(snapshot: dict) -> dict:
     """Fields 1.4-1.6: the legal entity set on the incident (one per report)."""
-    incident = snapshot["incident"]
-    company = snapshot["companies"].get(incident.get("company") or "")
-    if company is None:
-        raise ReportError(f"{incident['number']}: company is not set")
+    name = _required(snapshot, "legal_entity")
+    entity = snapshot["legal_entities"].get(name)
+    if entity is None:
+        raise ReportError(f"{snapshot['incident']['number']}: legal entity {name!r} is not in the "
+                          "Legal Entity Register")
     return {
-        "affectedEntityType": [company["u_dora_entity_type"]],
-        "affectedEntity-name": company["name"],
-        "affectedEntity-LEI": company["u_lei"],
+        "affectedEntityType": [entity["entity_type"]],
+        "affectedEntity-name": entity["name"],
+        "affectedEntity-LEI": entity["lei"],
     }
 
 
@@ -54,11 +51,11 @@ def _contact(officer: dict, prefix: str) -> dict:
 
 
 def build_initial_report(snapshot: dict) -> dict:
-    incident = snapshot["incident"]
-    if incident.get("u_dora_major") != "true":
+    incident, dora = snapshot["incident"], snapshot["dora"]
+    if not dora.get("major"):
         raise ReportError(f"{incident['number']} is not classified as a major incident")
-    detected_at = _timestamp(incident, "u_dora_detected_at")
-    classified_at = _timestamp(incident, "u_dora_classified_at")
+    detected_at = _timestamp(snapshot, "detected_at")
+    classified_at = _timestamp(snapshot, "classified_at")
     officer = snapshot["reporting_officer"]
 
     data = {
@@ -75,13 +72,13 @@ def build_initial_report(snapshot: dict) -> dict:
         "detectionDateTime": detected_at,
         "classificationDateTime": classified_at,
         "incidentDescription": incident.get("description") or incident["short_description"],
-        "classificationCriterion": _split(incident.get("u_dora_criteria") or ""),
-        "incidentDiscovery": _required(incident, "u_dora_discovery"),
-        "isBusinessContinuityActivated": incident.get("u_dora_bcp_activated") == "true",
+        "classificationCriterion": list(dora["criteria"]),
+        "incidentDiscovery": _required(snapshot, "discovery"),
+        "isBusinessContinuityActivated": bool(dora.get("bcp_activated")),
     }
     return {
         "schemaRef": SCHEMA_REF,
-        "reportingDate": incident["u_dora_classified_at"][:10],
+        "reportingDate": dora["classified_at"][:10],
         "financialEntityId": settings.FINANCIAL_ENTITY_ID,
         "data": data,
     }

@@ -15,7 +15,7 @@ def test_submitting_entity_is_swedish_bank_with_lei(snapshot):
 
 @pytest.mark.fi_source("v1 schema: financialEntityCode (2.1) is the bank's incident reference")
 def test_financial_entity_code_is_incident_number(snapshot):
-    assert build_initial_report(snapshot)["data"]["financialEntityCode"] == "INC0009817"
+    assert build_initial_report(snapshot)["data"]["financialEntityCode"] == "INC0010007"
 
 
 @pytest.mark.fi_source("FI guidance: detection and classification times in UTC")
@@ -44,7 +44,7 @@ def test_primary_contact_name_and_email_from_reporting_officer(snapshot):
 
 @pytest.mark.fi_source("v1 schema: isBusinessContinuityActivated and reportCurrency")
 def test_business_continuity_flag_and_currency(snapshot):
-    snapshot["incident"]["u_dora_bcp_activated"] = "false"
+    snapshot["dora"]["bcp_activated"] = False
     data = build_initial_report(snapshot)["data"]
     assert data["isBusinessContinuityActivated"] is False
     assert data["reportCurrency"] == "SEK"
@@ -52,20 +52,27 @@ def test_business_continuity_flag_and_currency(snapshot):
 
 @pytest.mark.fi_source("DORA Article 19: only major ICT-related incidents are reported")
 def test_non_major_incident_is_rejected(snapshot):
-    snapshot["incident"]["u_dora_major"] = "false"
+    snapshot["dora"]["major"] = False
     with pytest.raises(ReportError, match="not classified as a major incident"):
         build_initial_report(snapshot)
 
 
 @pytest.mark.fi_source("v1 schema: classificationDateTime is required")
 def test_missing_classification_time_is_rejected(snapshot):
-    snapshot["incident"]["u_dora_classified_at"] = ""
-    with pytest.raises(ReportError, match="u_dora_classified_at"):
+    snapshot["dora"]["classified_at"] = ""
+    with pytest.raises(ReportError, match="classified_at"):
         build_initial_report(snapshot)
 
 
 @pytest.mark.fi_source("v1 schema: detectionDateTime format date-time")
 def test_malformed_detection_time_is_rejected(snapshot):
-    snapshot["incident"]["u_dora_detected_at"] = "12/03/2026 08:10"
-    with pytest.raises(ReportError, match="u_dora_detected_at"):
+    snapshot["dora"]["detected_at"] = "12/03/2026 08:10"
+    with pytest.raises(ReportError, match="detected_at"):
+        build_initial_report(snapshot)
+
+
+@pytest.mark.fi_source("v1 schema: affectedEntity-name and affectedEntity-LEI (1.5-1.6) from the Legal Entity Register")
+def test_legal_entity_missing_from_the_register_is_named(snapshot):
+    snapshot["dora"]["legal_entity"] = "Swedish Bank Paymnets AB"
+    with pytest.raises(ReportError, match="Swedish Bank Paymnets AB.*Legal Entity Register"):
         build_initial_report(snapshot)

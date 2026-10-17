@@ -24,9 +24,9 @@ jobs:
         run: python -m dora_reporting.cli checksums
       - name: Run tests
         run: python -m pytest --junitxml=out/junit.xml
-      - name: Generate the INC0009817 report and validate against FI v2
+      - name: Generate the INC0010007 report and validate against FI v2
         if: ${{ !cancelled() }}
-        run: python -m dora_reporting.cli generate --incident INC0009817 --source fixture --schema v2 --out out
+        run: python -m dora_reporting.cli generate --incident INC0010007 --source fixture --schema v2 --out out
       - name: Write summary
         if: ${{ !cancelled() }}
         run: |
