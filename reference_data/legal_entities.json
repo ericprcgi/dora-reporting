@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Swedish Bank AB",
+    "entity_type": "credit_institution",
+    "lei": "DEMO00SWEDISHBANK062",
+    "parent": "",
+    "business_services": ["Payment Hub", "DORA Reporting Service"]
+  },
+  {
+    "name": "Swedish Bank Payments AB",
+    "entity_type": "payment_institution",
+    "lei": "DEMO00SWBPAYMENTS069",
+    "parent": "Swedish Bank AB",
+    "business_services": ["Card Payments"]
+  },
+  {
+    "name": "Swedish Bank Fonder AB",
+    "entity_type": "management_company",
+    "lei": "DEMO00SWBFONDER00089",
+    "parent": "Swedish Bank AB",
+    "business_services": ["Fund Trading"]
+  }
+]

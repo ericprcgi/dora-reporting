@@ -1,0 +1,12 @@
+{
+  "reporting_officer": {
+    "name": "Sara Nyberg",
+    "email": "sara.nyberg@swedishbank.example",
+    "phone": "08-123 456 78"
+  },
+  "incident_manager": {
+    "name": "Maria Lind",
+    "email": "maria.lind@swedishbank.example"
+  },
+  "secondary_contact": null
+}
