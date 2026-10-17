@@ -71,8 +71,9 @@ def test_malformed_detection_time_is_rejected(snapshot):
         build_initial_report(snapshot)
 
 
-@pytest.mark.fi_source("v1 schema: affectedEntity-name and affectedEntity-LEI (1.5-1.6) from the Legal Entity Register")
+@pytest.mark.fi_source("Legal Entity Register: affected entities (1.4-1.6) are looked up by name")
 def test_legal_entity_missing_from_the_register_is_named(snapshot):
     snapshot["dora"]["legal_entity"] = "Swedish Bank Paymnets AB"
+    snapshot["dora"]["confirmed_entities"] = ["Swedish Bank Paymnets AB"]
     with pytest.raises(ReportError, match="Swedish Bank Paymnets AB.*Legal Entity Register"):
         build_initial_report(snapshot)
