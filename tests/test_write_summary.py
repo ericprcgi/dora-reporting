@@ -27,11 +27,19 @@ def test_group_of_known_and_unknown_fields():
 def test_tests_table_reads_fi_source_properties(tmp_path):
     junit = tmp_path / "junit.xml"
     junit.write_text(JUNIT, encoding="utf-8")
-    table = write_summary.tests_table(junit)
+    table = write_summary.tests_table(junit).replace("\u200b", "")
     assert "| detectionDateTime pattern | v2 schema | test_x::test_a | ✅ passed |" in table
     assert "| field 2.1 not empty | FI guidance | test_x::test_b | ❌ failed |" in table
     assert "test_y::test_c" not in table
     assert "3 tests: 2 passed, 1 failed (1 without an FI source not listed)" in table
+
+
+def test_test_names_can_wrap_so_the_result_column_stays_visible(tmp_path):
+    """GitHub's job summary is narrow; a test name has no spaces, so it gets break points after "_" and "::"."""
+    junit = tmp_path / "junit.xml"
+    junit.write_text(JUNIT, encoding="utf-8")
+    row = next(line for line in write_summary.tests_table(junit).splitlines() if "detectionDateTime pattern" in line)
+    assert row.split(" | ")[2] == "test_\u200bx::\u200btest_\u200ba"
 
 
 def test_validation_table_counts_groups(tmp_path):

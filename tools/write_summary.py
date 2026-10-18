@@ -30,6 +30,11 @@ def _cell(value) -> str:
     return "–" if value in (None, "") else str(value).replace("|", "\\|").replace("\n", " ")
 
 
+def _breakable(name: str) -> str:
+    """Zero-width spaces after "_" and "::" let a long test name wrap in GitHub's narrow summary column."""
+    return name.replace("::", "::\u200b").replace("_", "_\u200b")
+
+
 def _result(case) -> str:
     if case.find("failure") is not None or case.find("error") is not None:
         return "❌ failed"
@@ -50,7 +55,7 @@ def tests_table(junit_xml: Path) -> str:
             continue
         source, _, requirement = prop.get("value").partition(": ")
         test = f"{case.get('classname', '').split('.')[-1]}::{case.get('name')}"
-        rows.append(f"| {_cell(requirement)} | {_cell(source)} | {test} | {result} |")
+        rows.append(f"| {_cell(requirement)} | {_cell(source)} | {_breakable(test)} | {result} |")
     tally = f"{counts['passed']} passed, {counts['failed']} failed"
     if counts["skipped"]:
         tally += f", {counts['skipped']} skipped"
